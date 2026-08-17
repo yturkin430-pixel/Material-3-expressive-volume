@@ -1,0 +1,250 @@
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+import Quickshell.Widgets
+import Quickshell.Services.Pipewire
+import QtQuick.Controls
+import QtQuick.Effects
+
+PanelWindow {
+  id: volume
+  
+  anchors {
+    bottom: true
+  }
+  
+  margins {
+    bottom: 0
+  }
+
+  implicitWidth: 310
+  implicitHeight: (volume.osdVisible || volume.isClosing) ? 110 : 0
+
+  WlrLayershell.layer: WlrLayer.Overlay
+
+  exclusionMode: ExclusionMode.Ignore
+
+  color: "transparent"
+
+  readonly property var node: Pipewire.defaultAudioSink
+
+  PwObjectTracker {
+    objects: volume.node ? [volume.node] : []
+  }
+
+  readonly property real currentVolume: node && node.audio ? node.audio.volume : 0.0
+  readonly property bool isMuted: node && node.audio ? node.audio.muted : false
+  readonly property bool isZeroOrMuted: volume.currentVolume <= 0.001 || volume.isMuted
+
+  property bool osdVisible: false
+  property bool isClosing: false
+
+  Timer {
+    id: hideTimer
+    interval: 3000
+    onTriggered: {
+      volume.isClosing = true
+      volume.osdVisible = false
+      closeTimer.restart()
+    }
+  }
+  Timer {
+    id: closeTimer
+    interval: 300 
+    onTriggered: {
+      volume.isClosing = false
+    }
+  }
+
+  function showOsd() {
+    volume.osdVisible = true
+    hideTimer.restart()
+  }
+
+  property bool isInitialized: false
+  onCurrentVolumeChanged: {
+    if (isInitialized) showOsd()
+    else isInitialized = true
+  }
+  onIsMutedChanged: {
+    if (isInitialized) showOsd()
+  }
+  visible: contentitem.y < 65
+
+  //opacity: osdVisible ? 1.0 : 0.0
+  //visible: opacity > 0.0
+
+  //Behavior on opacity {
+  //  NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+ // }
+  
+
+  Item {
+    width: 310
+    height: 50
+    y: volume.osdVisible ? 1 : 138
+
+    Behavior on y {
+      NumberAnimation { 
+        duration: 250
+        easing.type: volume.osdVisible ? Easing.InCubic : Easing.OutCubic 
+      }
+    }
+
+    MouseArea {
+      anchors.fill: parent
+      hoverEnabled: true
+      onEntered: hideTimer.stop()
+      onExited: if (volume.osdVisible) hideTimer.restart()
+    }
+
+    Rectangle {
+      id: background
+      anchors.fill: parent
+      radius: height / 2
+      color: "#090f10"
+    }
+
+    Rectangle {
+      id: bar
+      width: 225
+      height: 36
+      radius: 11
+      x: 33 
+      y: 7
+      color: "#1a2121"
+      MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        preventStealing: true
+
+        function updateVolume(mouseX) {
+          if (volume.node && volume.node.audio) {
+            let newVol = Math.max(0.0, Math.min(1.0, mouseX / bar.width));
+            volume.node.audio.volume = newVol;
+          }
+        }
+
+        onPressed: mouse => {
+          hideTimer.stop()
+          updateVolume(mouse.x)
+        }
+        onReleased: hideTimer.restart()
+        onPositionChanged: mouse => {
+          if (pressed) updateVolume(mouse.x);
+        }
+      }
+    }
+
+    Rectangle {
+      width: 7
+      height: 7
+      radius: width / 2
+      color: "#81d3dd"
+      anchors.verticalCenter: bar.verticalCenter
+      anchors.right: bar.right 
+      anchors.rightMargin: 7
+    }
+    
+    Rectangle {
+      id: mute
+      width: 36
+      height: 36
+      radius: width / 2
+      color: volume.isMuted ? "#81d3dd" : "#1a2121"
+      y: 7
+      x: 267
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+          if (volume.node && volume.node.audio) {
+            volume.node.audio.muted = !volume.node.audio.muted;
+          }
+        }
+      }
+    }
+
+    Image {
+      id: volumeIcon
+      source: volume.isMuted ? "volume_off.svg" : "volume_up.svg"
+      width: 18
+      height: 18
+      anchors.verticalCenter: mute.verticalCenter
+      anchors.horizontalCenter: mute.horizontalCenter
+      
+      MultiEffect {
+        source: volumeIcon
+        anchors.fill: volumeIcon
+        colorization: 1.0  
+        colorizationColor: volume.isMuted ? "#090f10" : "#81d3dd"
+      }
+    }
+
+    Rectangle {
+      id: filledBar
+      height: 36
+      radius: 12
+      width: volume.isMuted ? 0 : Math.max(0, bar.width * volume.currentVolume)
+      anchors.left: bar.left
+      y: 7
+      color: "#81d3dd"
+      
+      Behavior on width {
+        enabled: !mouseArea.pressed
+        NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+      }
+    }
+
+    Image {
+      id: note
+      source: volume.isZeroOrMuted ? "music_off.svg" : "music_note.svg"
+      width: 18
+      height: 18
+      anchors.verticalCenter: bar.verticalCenter
+      anchors.left: bar.left 
+      anchors.leftMargin: 7
+
+      MultiEffect {
+        source: note
+        anchors.fill: note
+        colorization: 1.0  
+        colorizationColor: volume.isZeroOrMuted ? "#81d3dd" : "#090f10"
+      }
+    }
+
+    Item {
+      width: 15
+      height: 44
+      x: filledBar.x + filledBar.width - 8
+      
+      Rectangle {
+        width: 3
+        height: 44
+        radius: width / 2
+        color: "#81d3dd"
+        y: 3
+        x: 7
+      }
+      Rectangle {
+        width: mouseArea.pressed? 6 : 5
+        height: 44
+        color: "#090f10"
+        y: 3 
+        x: mouseArea.pressed? 9 : 10
+      }
+      Rectangle {
+        width: mouseArea.pressed? 7 : 6
+        height: 44
+        color: "#090f10"
+        y: 3 
+        x: mouseArea.pressed? 1 : 1
+        Behavior on width {
+        enabled: !mouseArea.pressed
+        NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+      }
+      } 
+    }
+  }
+}
+
