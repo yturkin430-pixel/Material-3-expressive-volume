@@ -1,5 +1,5 @@
 # Material 3 expressive volume
-Material 3 Expressive Volume — An Android 16-inspired volume OSD widget for Linux desktop(Quickshell).
+Material 3 Expressive Volume — An Android 16-inspired volume OSD widget for Linux desktop (Quickshell).
 <p align="center">
   <img src="preview.png" autoplay loop muted width="600"></img>
 </p>
@@ -9,7 +9,7 @@ Material 3 Expressive Volume — An Android 16-inspired volume OSD widget for Li
 git clone https://github.com/yturkin430-pixel/Material-3-expressive-volume.git
 cd Material-3-expressive-volume
 mkdir -p ~/.config/quickshell/Volume
-mv * ~/.config/quickshell/Volume
+cp -r * ~/.config/quickshell/Volume
 ```
 2. Dynamic Colors
 The following utilities are required for the theme generation to work correctly:
