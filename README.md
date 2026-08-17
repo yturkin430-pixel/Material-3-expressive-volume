@@ -6,7 +6,7 @@ git clone https://github.com/yturkin430-pixel/Material-3-expressive-volume.git
 cd Material-3-expressive-volume
 mkdir -p ~/.config/quickshell
 mv * ~/.config/quickshell
-unzip Volume.zip -d ~/.config/quickshell/
+unzip ~/.config/quickshell/Volume.zip -d ~/.config/quickshell/
 ```
 2. Dynamic Colors
 The following utilities are required for the theme generation to work correctly:
