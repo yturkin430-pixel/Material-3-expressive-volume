@@ -26,7 +26,7 @@ set = true
 input_path = "~/.config/quickshell/Volume/shell.qml.hbs"
 output_path = "~/.config/quickshell/Volume/shell.qml"
 ```
-Start generating the topic:
+Start generating the theme:
 ```bash
 matugen image PATH/TO/YOUR/WALLPAPERS -m dark --prefer=lightness
 ```
