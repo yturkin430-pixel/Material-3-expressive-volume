@@ -1,5 +1,9 @@
 # Material 3 expressive volume
 Material 3 Expressive Volume — An Android 16-inspired volume OSD widget for Linux desktop(Quickshell).
+<p align="center">
+  <video src="assets/preview.mp4" autoplay loop muted width="600"></video>
+</p>
+
 1. Installation:
 ```bash
 git clone https://github.com/yturkin430-pixel/Material-3-expressive-volume.git
