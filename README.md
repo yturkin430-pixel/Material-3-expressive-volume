@@ -16,7 +16,7 @@ mkdir ~/.config/matugen
 nano ~/.config/matugen/config.toml
 ```
 Insert this text into the content of your file:
-```bash
+```toml
 [config.wallpaper]
 command = "awww"
 arguments = ["img", "--transition-type", "simple"]
